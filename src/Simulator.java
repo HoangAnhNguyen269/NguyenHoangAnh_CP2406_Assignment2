@@ -9,7 +9,6 @@ import java.util.List;
 
 public class Simulator implements ActionListener, Runnable, MouseListener {
 
-
     private int x, y;
     private boolean running = false;
     private JFrame frame = new JFrame(Const.cityName + " traffic simulator");
@@ -30,6 +29,7 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
 
     //south container (navigation bar)
     private JButton startSim = new JButton("start");
+    private JButton pauseSim = new JButton("pause");
     private JButton exitSim = new JButton("exit");
     private JButton removeRoad = new JButton("remove last road");
     private JButton saveCity = new JButton("save city");
@@ -82,9 +82,11 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
         frame.add(north, BorderLayout.NORTH);
 
         //buttons on the south side
-        navBar.setLayout(new GridLayout(1, 4));
+        navBar.setLayout(new GridLayout(1, 5));
         navBar.add(startSim);
         startSim.addActionListener(this);
+        navBar.add(pauseSim);
+        pauseSim.addActionListener(this);
         navBar.add(exitSim);
         exitSim.addActionListener(this);
         navBar.add(removeRoad);
@@ -171,8 +173,13 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
                 running = true;
                 Thread t = new Thread(this);
                 t.start();
+
             }
         }
+        if (source == pauseSim) {
+            running = false;
+        }
+
         if (source == removeRoad) {
             if (Const.getCurrentCity().getRoads().size() > 1) {
                 Const.getCurrentCity().getRoads().remove(Const.getCurrentCity().getRoads().size() - 1);
@@ -355,61 +362,64 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
     public void run() {
         boolean carCollision = false;
         ArrayList<Boolean> trueCases = new ArrayList<Boolean>();
-        while (running) {
-            try {
-                Thread.sleep(Const.updateSpeed);
-            } catch (Exception ignored) {
-            }
-            ArrayList<Road> roads = Const.getCurrentCity().getRoads();
-            for (int j = 0; j < roads.size(); j++) {
-                Road r = roads.get(j);
-                TrafficLight l = r.getTrafficLight();
-                if (l != null) {
-                    l.operate();
-                    if (l.getCurrentColor().equals("red")) {
-                        r.setLightColor(Color.red);
-                    } else {
-                        r.setLightColor(Color.GREEN);
-                    }
-                }
 
-            }
-            ArrayList<Car> cars = Const.getCurrentCity().getCars();
-            for (int i = 0; i < cars.size(); i++) {
-                Car currentCar = cars.get(i);
-                String direction = currentCar.getRoadCarIsOn().getTrafficDirection();
-                if (!currentCar.collision(currentCar.getCarXPosition() + 30, currentCar) && (direction.equals("east") || direction.equals("south"))
-                        || !currentCar.collision(currentCar.getCarXPosition(), currentCar) && (direction.equals("west") || direction.equals("north"))) {
-                    currentCar.move();
-                } else {
-                    for (int z = 0; z < cars.size(); z++) {
-                        Car otherCar = cars.get(z);
-                        if (otherCar.getCarYPosition() != currentCar.getCarYPosition()) {
-                            if (currentCar.getCarXPosition() + currentCar.getCarWidth() < otherCar.getCarXPosition()) {
-                                trueCases.add(true); // safe to switch lane
-                            } else {
-                                trueCases.add(false); // not safe to switch lane
+            while (running) {
+                try {
+                    Thread.sleep(Const.updateSpeed);
+                } catch (Exception ignored) {
+                }
+                ArrayList<Road> roads = Const.getCurrentCity().getRoads();
+                for (int j = 0; j < roads.size(); j++) {
+                    Road r = roads.get(j);
+                    TrafficLight l = r.getTrafficLight();
+                    if (l != null) {
+                        l.operate();
+                        if (l.getCurrentColor().equals("red")) {
+                            r.setLightColor(Color.red);
+                        } else {
+                            r.setLightColor(Color.GREEN);
+                        }
+                    }
+
+                }
+                ArrayList<Car> cars = Const.getCurrentCity().getCars();
+                for (int i = 0; i < cars.size(); i++) {
+                    Car currentCar = cars.get(i);
+                    String direction = currentCar.getRoadCarIsOn().getTrafficDirection();
+                    if (!currentCar.collision(currentCar.getCarXPosition() + 30, currentCar) && (direction.equals("east") || direction.equals("south"))
+                            || !currentCar.collision(currentCar.getCarXPosition(), currentCar) && (direction.equals("west") || direction.equals("north"))) {
+                        currentCar.move();
+                    } else {
+                        for (int z = 0; z < cars.size(); z++) {
+                            Car otherCar = cars.get(z);
+                            if (otherCar.getCarYPosition() != currentCar.getCarYPosition()) {
+                                if (currentCar.getCarXPosition() + currentCar.getCarWidth() < otherCar.getCarXPosition()) {
+                                    trueCases.add(true); // safe to switch lane
+                                } else {
+                                    trueCases.add(false); // not safe to switch lane
+                                }
                             }
                         }
-                    }
-                    for (int l = 0; l < trueCases.size(); l++) {
-                        if (!trueCases.get(l)) {
-                            carCollision = true;
-                            break;
+                        for (int l = 0; l < trueCases.size(); l++) {
+                            if (!trueCases.get(l)) {
+                                carCollision = true;
+                                break;
+                            }
                         }
+                        if (!carCollision) {
+                            currentCar.setCarYPosition(currentCar.getRoadCarIsOn().getRoadYPos() + 30);
+                        }
+                        for (int m = 0; m < trueCases.size(); m++) {
+                            trueCases.remove(m);
+                        }
+                        carCollision = false;
                     }
-                    if (!carCollision) {
-                        currentCar.setCarYPosition(currentCar.getRoadCarIsOn().getRoadYPos() + 30);
-                    }
-                    for (int m = 0; m < trueCases.size(); m++) {
-                        trueCases.remove(m);
-                    }
-                    carCollision = false;
+
                 }
+                frame.repaint();
 
             }
-            frame.repaint();
-
         }
-    }
+
+
 }
