@@ -7,10 +7,10 @@ public class CitySelection implements ActionListener {
 
     private JFrame frame = new JFrame("City selection");
 
-    private JButton createCity = new JButton("cuztomize a city");
-
-
-    private JButton openACity = new JButton("open a city");
+    private JButton createCity = new JButton("Cuztomize a city");
+    private JButton openACity = new JButton("Open a city");
+    private JButton editACity = new JButton("Edit a city");
+    private JButton simulateACity = new JButton("Simulate a city");
     private Container bottomNavBar = new Container();
     private Container cityPool = new Container();
 
@@ -28,11 +28,15 @@ public class CitySelection implements ActionListener {
         cityPool.setLayout(new FlowLayout());
         frame.add(cityPool, BorderLayout.PAGE_END);
         initCityPool();
-        bottomNavBar.setLayout(new GridLayout(1, 2));
+        bottomNavBar.setLayout(new GridLayout(1, 4));
         bottomNavBar.add(createCity);
         createCity.addActionListener(this);
         bottomNavBar.add(openACity);
         openACity.addActionListener(this);
+        bottomNavBar.add(editACity);
+        editACity.addActionListener(this);
+        bottomNavBar.add(simulateACity);
+        simulateACity.addActionListener(this);
         frame.add(bottomNavBar, BorderLayout.NORTH);
 
         frame.setVisible(true);
@@ -54,7 +58,7 @@ public class CitySelection implements ActionListener {
             city.addRoad(roadStart);
             Const.cities.add(city);
             updateCityPool();
-        } else if (source == openACity) {
+        } else if (source == openACity || source == editACity || source == simulateACity) {
             if (Const.cities.size() == 0) {
                 JOptionPane.showMessageDialog(null, "please create a city first.");
                 return;
