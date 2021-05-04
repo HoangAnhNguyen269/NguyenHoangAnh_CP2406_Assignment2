@@ -13,6 +13,8 @@ public class Road extends JPanel {
     private Color lightColor = Color.green;
     private String orientation;
     String trafficDirection;
+    public ArrayList<Car> carsOnRoad;
+
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -72,7 +74,19 @@ public class Road extends JPanel {
             }
         }
     }
+    public void addACarOnRoad(Car car){
+        if(this.carsOnRoad == null){
+            this.carsOnRoad = new ArrayList<Car>();
+            this.carsOnRoad.add(car);
+        }
+        else{
+            this.carsOnRoad.add(car);
+        }
 
+    }
+    public void removeACarOnRoad(Car car){
+        this.carsOnRoad.remove(car);
+    }
     public void paintRoad(Graphics g) {
         if (orientation.equals("horizontal")) {
             g.setColor(Color.black);
@@ -100,6 +114,7 @@ public class Road extends JPanel {
         this.endRoadYPos = 270 + numOfSegments * 50;
         this.trafficDirection = "east";
         this.light = new TrafficLight();
+        this.carsOnRoad = new ArrayList<Car>();
     }
 
     Road(int numOfSegments, String orientation, int xPos, int yPos, String direction) {

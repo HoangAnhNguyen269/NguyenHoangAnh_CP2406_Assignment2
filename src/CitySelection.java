@@ -3,36 +3,36 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class MapSelection implements ActionListener {
+public class CitySelection implements ActionListener {
 
-    private JFrame frame = new JFrame("Map selection");
+    private JFrame frame = new JFrame("City selection");
 
-    private JButton createMap = new JButton("cuztomize a map");
+    private JButton createCity = new JButton("cuztomize a city");
 
 
-    private JButton openAMap = new JButton("open a map");
+    private JButton openACity = new JButton("open a city");
     private Container bottomNavBar = new Container();
-    private Container mapPool = new Container();
+    private Container cityPool = new Container();
 
     public static void main(String[] args) {
-        new MapSelection();
+        new CitySelection();
     }
 
-    public MapSelection() {
-        frame.setSize(1200, 700);
+    public CitySelection() {
+        //frame.setSize(1200, 700);
         frame.setLayout(new BorderLayout());
         Point center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
-        int width = 500;
-        int height = 200;
-        frame.setBounds(center.x - width / 2, center.y - height / 2, width, height);
-        mapPool.setLayout(new FlowLayout());
-        frame.add(mapPool, BorderLayout.PAGE_END);
-        initCenter();
-        bottomNavBar.setLayout(new GridLayout(1, 4));
-        bottomNavBar.add(createMap);
-        createMap.addActionListener(this);
-        bottomNavBar.add(openAMap);
-        openAMap.addActionListener(this);
+        int widthCitySelection = 800;
+        int heightCitySelection = 400;
+        frame.setBounds(center.x - widthCitySelection / 2, center.y - heightCitySelection / 2, widthCitySelection, heightCitySelection);
+        cityPool.setLayout(new FlowLayout());
+        frame.add(cityPool, BorderLayout.PAGE_END);
+        initCityPool();
+        bottomNavBar.setLayout(new GridLayout(1, 2));
+        bottomNavBar.add(createCity);
+        createCity.addActionListener(this);
+        bottomNavBar.add(openACity);
+        openACity.addActionListener(this);
         frame.add(bottomNavBar, BorderLayout.NORTH);
 
         frame.setVisible(true);
@@ -43,20 +43,20 @@ public class MapSelection implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
-        if (source == createMap) {
+        if (source == createCity) {
             String name = JOptionPane.showInputDialog("Please input city name:");
             if (name == null || name.equals("")) {
                 return;
             }
             City city = new City(name);
-            //road default in city
+            //road default
             Road roadStart = new Road();
             city.addRoad(roadStart);
             Const.cities.add(city);
-            updateCenter();
-        } else if (source == openAMap) {
+            updateCityPool();
+        } else if (source == openACity) {
             if (Const.cities.size() == 0) {
-                JOptionPane.showMessageDialog(null, "please create city first.");
+                JOptionPane.showMessageDialog(null, "please create a city first.");
                 return;
             }
 
@@ -79,26 +79,26 @@ public class MapSelection implements ActionListener {
         }
     }
 
-    private void initCenter() {
-        //at first time ,will init city and road info
+    private void initCityPool() {
+        //Initialize city pool
         Const.savedCity.clear();
         Const.cities.clear();
-        Const.savedCity.addAll(SaveFile.readAllCity("city.txt"));
+        Const.savedCity.addAll(SaveFile.readAllCity("cities.txt"));
         for (int i = 0; i < Const.savedCity.size(); i++) {
             String name = Const.savedCity.get(i);
-            City cityInfo=SaveFile.readCityInfo(name);
+            City cityInfo = SaveFile.readCityInfo(name);
             Const.cities.add(cityInfo);
         }
-        updateCenter();
+        updateCityPool();
     }
 
-    private void updateCenter() {
-        mapPool.removeAll();
+    private void updateCityPool() {
+        cityPool.removeAll();
         for (int i = 0; i < Const.cities.size(); i++) {
             JButton jButton = new JButton(Const.cities.get(i).getName());
             jButton.addActionListener(this);
-            mapPool.add(jButton);
+            cityPool.add(jButton);
         }
-        mapPool.revalidate();
+        cityPool.revalidate();
     }
 }

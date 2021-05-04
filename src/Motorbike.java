@@ -3,8 +3,8 @@ import java.awt.*;
 public class Motorbike extends Car{
     Motorbike(Road road){
         super(road);
-        width = Const.WIDTH_MOTORBIKE;
-        height = Const.HEIGHT_MOTORBIKE;
+        width = Const.LENGTH_MOTORBIKE;
+        height = Const.BREADTH_MOTORBIKE;
     }
     public void paintMeHorizontal(Graphics g){
         g.setColor(Color.BLUE);

@@ -3,8 +3,8 @@ import java.awt.*;
 public class Bus extends Car {
     Bus(Road road){
         super(road);
-        width = Const.WIDTH_BUS;
-        height = Const.HEIGHT_BUS;
+        width = Const.LENGTH_BUS;
+        height = Const.BREADTH_BUS;
     }
     public void paintMeHorizontal(Graphics g){
         g.setColor(Color.GREEN);

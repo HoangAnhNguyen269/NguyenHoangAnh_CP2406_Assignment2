@@ -15,6 +15,7 @@ public class Car {
         this.road = road;
         yPos = getRoadCarIsOn().roadYPos;
         xPos = getRoadCarIsOn().roadXPos;
+        this.road.addACarOnRoad(this);
     }
 
     public Road getRoadCarIsOn(){
@@ -32,7 +33,9 @@ public class Car {
     public int getCarWidth(){return width;}
 
     private void setCurrentRoad(Road road){
+        this.road.removeACarOnRoad(this);
         this.road = road;
+        this.road.addACarOnRoad(this);
     }
     private boolean checkIfAtEndOfRoad(){
         if(getRoadCarIsOn().getTrafficDirection().equals("east") || getRoadCarIsOn().getTrafficDirection().equals("south")){

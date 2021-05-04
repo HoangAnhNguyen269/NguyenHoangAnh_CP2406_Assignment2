@@ -1,10 +1,10 @@
 import java.awt.*;
 
-public class Sedan extends Car{
+public class Sedan extends Car{ //Sedan is a Car
     Sedan(Road road){
         super(road);
-        width = Const.WIDTH_SEDAN;
-        height = Const.HEIGHT_SEDAN;
+        width = Const.LENGTH_SEDAN;
+        height = Const.BREADTH_SEDAN;
     }
     public void paintMeHorizontal(Graphics g){
         g.setColor(Color.CYAN);

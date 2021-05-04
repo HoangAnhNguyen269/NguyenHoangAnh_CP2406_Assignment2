@@ -12,17 +12,13 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
 
     private int x, y;
     private boolean running = false;
-    private JFrame frame = new JFrame(Const.cityName + " traffic sim");
-
-    // fixed starting road on map
+    private JFrame frame = new JFrame(Const.cityName + " traffic simulator");
     private int getX() {
         return x;
     }
-
     private int getY() {
         return y;
     }
-
     //north container
     private JLabel info = new JLabel("click on screen to select x,y position");
     private JLabel labelXPosField = new JLabel("Road x position");
@@ -31,16 +27,17 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
     private JTextField yPosField = new JTextField("0");
     private Container north = new Container();
 
-    //south container
+
+    //south container (navigation bar)
     private JButton startSim = new JButton("start");
     private JButton exitSim = new JButton("exit");
     private JButton removeRoad = new JButton("remove last road");
     private JButton saveCity = new JButton("save city");
-    private JButton back = new JButton("back city list");
-    private Container south = new Container();
+    private JButton back = new JButton("back city pool");
+    private Container navBar = new Container();
 
     //west container
-    private Container west = new Container();
+    private Container westNavBar = new Container();
     private JButton addSedan = new JButton("add sedan");
     private JButton addBus = new JButton("add bus");
     private JButton addBike = new JButton("add motorbike");
@@ -67,8 +64,12 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
     private JRadioButton eastDirection = new JRadioButton("east");
 
     public Simulator() {
-        frame.setSize(1200, 700);
+        //frame.setSize(1200, 700);
         frame.setLayout(new BorderLayout());
+        Point center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
+        int widthCitySelection = 1200;
+        int heightCitySelection = 700;
+        frame.setBounds(center.x - widthCitySelection / 2, center.y - heightCitySelection / 2, widthCitySelection, heightCitySelection);
         frame.add(Const.getCurrentCity().getRoads().get(0), BorderLayout.CENTER);
         Const.getCurrentCity().getRoads().get(0).addMouseListener(this);
         //north side info
@@ -81,50 +82,50 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
         frame.add(north, BorderLayout.NORTH);
 
         //buttons on the south side
-        south.setLayout(new GridLayout(1, 4));
-        south.add(startSim);
+        navBar.setLayout(new GridLayout(1, 4));
+        navBar.add(startSim);
         startSim.addActionListener(this);
-        south.add(exitSim);
+        navBar.add(exitSim);
         exitSim.addActionListener(this);
-        south.add(removeRoad);
+        navBar.add(removeRoad);
         removeRoad.addActionListener(this);
-        south.add(saveCity);
+        navBar.add(saveCity);
         saveCity.addActionListener(this);
-        south.add(back);
+        navBar.add(back);
         back.addActionListener(this);
-        frame.add(south, BorderLayout.SOUTH);
+        frame.add(navBar, BorderLayout.SOUTH);
 
         //buttons on west side
-        west.setLayout(new GridLayout(16, 1));
-        west.add(addSedan);
+        westNavBar.setLayout(new GridLayout(16, 1));
+        westNavBar.add(addSedan);
         addSedan.addActionListener(this);
-        west.add(addBus);
+        westNavBar.add(addBus);
         addBus.addActionListener(this);
-        west.add(addBike);
+        westNavBar.add(addBike);
         addBike.addActionListener(this);
-        west.add(addRoad);
+        westNavBar.add(addRoad);
         addRoad.addActionListener(this);
-        west.add(label);
-        west.add(length);
+        westNavBar.add(label);
+        westNavBar.add(length);
         length.addActionListener(this);
-        west.add(label1);
-        west.add(rate);
+        westNavBar.add(label1);
+        westNavBar.add(rate);
         rate.addActionListener(this);
 
         //radio buttons on west side
         selections.add(vertical);
         selections.add(horizontal);
-        west.add(vertical);
+        westNavBar.add(vertical);
         vertical.addActionListener(this);
         horizontal.setSelected(true);
-        west.add(horizontal);
+        westNavBar.add(horizontal);
         horizontal.addActionListener(this);
 
         selections2.add(hasLight);
         selections2.add(noLight);
-        west.add(hasLight);
+        westNavBar.add(hasLight);
         hasLight.addActionListener(this);
-        west.add(noLight);
+        westNavBar.add(noLight);
         noLight.addActionListener(this);
         noLight.setSelected(true);
 
@@ -132,19 +133,19 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
         selections3.add(southDirection);
         selections3.add(eastDirection);
         selections3.add(westDirection);
-        west.add(northDirection);
+        westNavBar.add(northDirection);
         northDirection.addActionListener(this);
         northDirection.setEnabled(false);
-        west.add(southDirection);
+        westNavBar.add(southDirection);
         southDirection.addActionListener(this);
         southDirection.setEnabled(false);
-        west.add(eastDirection);
+        westNavBar.add(eastDirection);
         eastDirection.addActionListener(this);
         eastDirection.setSelected(true);
-        west.add(westDirection);
+        westNavBar.add(westDirection);
         westDirection.addActionListener(this);
 
-        frame.add(west, BorderLayout.WEST);
+        frame.add(westNavBar, BorderLayout.WEST);
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.repaint();
@@ -181,47 +182,66 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
         if (source == addBus) {
             ArrayList<Road> roads = Const.getCurrentCity().getRoads();
             if (roads.size() != 0) {
+                int currentPosi = 0;
                 Bus bus = new Bus(roads.get(0));
                 Const.getCurrentCity().addCar(bus);
-                for (int x = roads.get(0).roadXPos; x < bus.getRoadCarIsOn().getRoadLength() * 50; x = x + 30) {
+                for (int x = roads.get(0).roadXPos; x < bus.getRoadCarIsOn().getRoadLength() * 33; x = x + 30) {//limit car based on the road length
                     bus.setCarXPosition(x);
                     bus.setCarYPosition(bus.getRoadCarIsOn().getRoadYPos() + 5);
                     if (!bus.collision(x, bus)) {
                         frame.repaint();
                         return;
                     }
+                    currentPosi = x;
                 }
+                if(currentPosi + 30 > bus.getRoadCarIsOn().getRoadLength() * 33){
+                    JOptionPane.showMessageDialog(null,"Can not add more car");
+                }
+
             }
         }
         if (source == addBike) {
             ArrayList<Road> roads = Const.getCurrentCity().getRoads();
             if (roads.size() != 0) {
+                int currentPosi = 0;
                 Motorbike motorbike = new Motorbike(roads.get(0));
                 Const.getCurrentCity().addCar(motorbike);
-                for (int x = roads.get(0).roadXPos; x < motorbike.getRoadCarIsOn().getRoadLength() * 50; x = x + 30) {
+                for (int x = roads.get(0).roadXPos; x < motorbike.getRoadCarIsOn().getRoadLength() * 33; x = x + 30) {//limit car based on the road length
                     motorbike.setCarXPosition(x);
                     motorbike.setCarYPosition(motorbike.getRoadCarIsOn().getRoadYPos() + 5);
                     if (!motorbike.collision(x, motorbike)) {
                         frame.repaint();
                         return;
                     }
+                    currentPosi = x;
+                }
+                if(currentPosi + 30 > motorbike.getRoadCarIsOn().getRoadLength() * 33){
+                    JOptionPane.showMessageDialog(null,"Can not add more car");
                 }
             }
         }
         if (source == addSedan) {
             ArrayList<Road> roads = Const.getCurrentCity().getRoads();
-            if (roads.size() != 0) {
+            
+                if (roads.size() != 0) {
+                    int currentPosi = 0;
                 Sedan sedan = new Sedan(roads.get(0));
                 Const.getCurrentCity().addCar(sedan);
                 sedan.setCarYPosition(sedan.getRoadCarIsOn().getRoadYPos() + 5);
-                for (int x = roads.get(0).roadXPos; x < sedan.getRoadCarIsOn().getRoadLength() * 50; x = x + 30) {
+                for (int x = roads.get(0).roadXPos; x < sedan.getRoadCarIsOn().getRoadLength() * 33; x = x + 30) { //limit car based on the road length
                     sedan.setCarXPosition(x);
                     if (!sedan.collision(x, sedan)) {
                         frame.repaint();
                         return;
                     }
+                    currentPosi = x;
+                }
+                if(currentPosi + 30 > sedan.getRoadCarIsOn().getRoadLength() * 33){
+                    JOptionPane.showMessageDialog(null,"Can not add more car");
                 }
             }
+
+
         }
         if (source == addRoad) {
             int roadLength = 5;
@@ -276,7 +296,11 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
                 Road road = new Road(roadLength, orientation, xPos, yPos, direction);
                 Const.getCurrentCity().addRoad(road);
             }
-            frame.repaint();
+            if(roadLength<2 || roadLength>5){
+                JOptionPane.showMessageDialog(null,"A road is at least twice the length of a bus (at most five times)");
+            }
+            else{frame.repaint();}
+
 
         }
         if (source == exitSim) {
@@ -284,12 +308,12 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
         }
         if (source == back) {
             frame.dispose();
-            new MapSelection();
+            new CitySelection();
         }
         if (source == saveCity) {
             if (!Const.savedCity.contains(Const.cityName)){
                 Const.savedCity.add(Const.cityName);
-                SaveFile.saveData("city.txt",Const.savedCity);
+                SaveFile.saveData("cities.txt",Const.savedCity);
             }
 
             ArrayList<Road> roads = Const.getCurrentCity().getRoads();
@@ -297,7 +321,7 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
             for (int i = 0; i < roads.size(); i++) {
                 data.add(roads.get(i).toString());
             }
-            SaveFile.saveData(Const.cityName+".txt",data);
+            SaveFile.saveData(Const.cityName +".txt",data);
             JOptionPane.showMessageDialog(null, "save city success");
         }
     }
