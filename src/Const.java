@@ -14,7 +14,7 @@ public class Const {
     public static final int BREADTH_BUS = LENGTH_BUS/2;
     public static List<City> cities =new ArrayList<>();
     public static List<String> savedCity =new ArrayList<>();
-
+    public static int spawnRate = 0;
     public static City getCurrentCity(){
         for (int i = 0; i < cities.size(); i++) {
             if (cities.get(i).getName().equals(cityName)){

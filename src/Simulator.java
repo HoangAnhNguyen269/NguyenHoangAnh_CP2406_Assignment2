@@ -6,8 +6,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Simulator implements ActionListener, Runnable, MouseListener {
+
 
     private int x, y;
     private boolean running = false;
@@ -42,6 +44,9 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
     private JButton addBus = new JButton("add bus");
     private JButton addBike = new JButton("add motorbike");
     private JButton addRoad = new JButton("add road");
+    private JButton addSpawnRate = new JButton("Enter spawn rate");
+
+
     //road orientation selection
     private ButtonGroup selections = new ButtonGroup();
     private JRadioButton horizontal = new JRadioButton("horizontal");
@@ -67,8 +72,8 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
         //frame.setSize(1200, 700);
         frame.setLayout(new BorderLayout());
         Point center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
-        int widthCitySelection = 1200;
-        int heightCitySelection = 700;
+        int widthCitySelection = 1800;
+        int heightCitySelection = 1000;
         frame.setBounds(center.x - widthCitySelection / 2, center.y - heightCitySelection / 2, widthCitySelection, heightCitySelection);
         frame.add(Const.getCurrentCity().getRoads().get(0), BorderLayout.CENTER);
         Const.getCurrentCity().getRoads().get(0).addMouseListener(this);
@@ -98,7 +103,7 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
         frame.add(navBar, BorderLayout.SOUTH);
 
         //buttons on west side
-        westNavBar.setLayout(new GridLayout(16, 1));
+        westNavBar.setLayout(new GridLayout(18, 1));
         westNavBar.add(addSedan);
         addSedan.addActionListener(this);
         westNavBar.add(addBus);
@@ -107,6 +112,8 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
         addBike.addActionListener(this);
         westNavBar.add(addRoad);
         addRoad.addActionListener(this);
+        addSpawnRate.addActionListener(this);
+        westNavBar.add(addSpawnRate);
         westNavBar.add(label);
         westNavBar.add(length);
         length.addActionListener(this);
@@ -310,6 +317,10 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
 
 
         }
+        if(source == addSpawnRate){
+            String spawnRateInput=JOptionPane.showInputDialog(null,"Current spawn rate is "+ Const.spawnRate+". Enter the new spawn rate ");
+            Const.spawnRate = Integer.parseInt(spawnRateInput);
+        }
         if (source == exitSim) {
             System.exit(0);
         }
@@ -362,8 +373,28 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
     public void run() {
         boolean carCollision = false;
         ArrayList<Boolean> trueCases = new ArrayList<Boolean>();
-
+        int spawnTime = 0;
             while (running) {
+                if(Const.spawnRate >0){
+                    if(spawnTime < Const.spawnRate){
+                        spawnTime ++;
+                    }
+                    else{
+                        spawnTime = 0;
+                        Random randomChoice= new Random();
+                        int addChoice = randomChoice.nextInt(3);
+                        if(addChoice == 0){ //add bike
+                            spawnBike();
+                        }
+                        else if (addChoice ==1){ //add Bus
+                            spawnBus();
+                        }
+                        else{//add Sedan
+                            spawnSedan();
+                        }
+                    }
+                }
+
                 try {
                     Thread.sleep(Const.updateSpeed);
                 } catch (Exception ignored) {
@@ -419,6 +450,73 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
                 frame.repaint();
 
             }
+        }
+
+        public void spawnBike(){
+            Random randomChoice =new Random();
+            ArrayList<Road> roads = Const.getCurrentCity().getRoads();
+            if (roads.size() != 0) {
+                int currentPosi = 0;
+                Motorbike motorbike = new Motorbike(roads.get(randomChoice.nextInt(roads.size())));
+                Const.getCurrentCity().addCar(motorbike);
+                for (int x = roads.get(0).roadXPos; x < motorbike.getRoadCarIsOn().getRoadLength() * 33; x = x + 30) {//limit car based on the road length
+                    motorbike.setCarXPosition(x);
+                    motorbike.setCarYPosition(motorbike.getRoadCarIsOn().getRoadYPos() + 5);
+                    if (!motorbike.collision(x, motorbike)) {
+                        frame.repaint();
+                        return;
+                    }
+                    currentPosi = x;
+                }
+                if(currentPosi + 30 > motorbike.getRoadCarIsOn().getRoadLength() * 33){
+                    JOptionPane.showMessageDialog(null,"Can not add more car");
+                }
+            }
+        }
+        public void spawnBus(){
+            Random randomChoice =new Random();
+            ArrayList<Road> roads = Const.getCurrentCity().getRoads();
+            if (roads.size() != 0) {
+                int currentPosi = 0;
+                Bus bus = new Bus(roads.get(randomChoice.nextInt(roads.size())));
+                Const.getCurrentCity().addCar(bus);
+                for (int x = roads.get(0).roadXPos; x < bus.getRoadCarIsOn().getRoadLength() * 33; x = x + 30) {//limit car based on the road length
+                    bus.setCarXPosition(x);
+                    bus.setCarYPosition(bus.getRoadCarIsOn().getRoadYPos() + 5);
+                    if (!bus.collision(x, bus)) {
+                        frame.repaint();
+                        return;
+                    }
+                    currentPosi = x;
+                }
+                if(currentPosi + 30 > bus.getRoadCarIsOn().getRoadLength() * 33){
+                    JOptionPane.showMessageDialog(null,"Can not add more car");
+                }
+
+            }
+        }
+        public void spawnSedan(){
+            Random randomChoice =new Random();
+            ArrayList<Road> roads = Const.getCurrentCity().getRoads();
+
+            if (roads.size() != 0) {
+                int currentPosi = 0;
+                Sedan sedan = new Sedan(roads.get(randomChoice.nextInt(roads.size())));
+                Const.getCurrentCity().addCar(sedan);
+                sedan.setCarYPosition(sedan.getRoadCarIsOn().getRoadYPos() + 5);
+                for (int x = roads.get(0).roadXPos; x < sedan.getRoadCarIsOn().getRoadLength() * 33; x = x + 30) { //limit car based on the road length
+                    sedan.setCarXPosition(x);
+                    if (!sedan.collision(x, sedan)) {
+                        frame.repaint();
+                        return;
+                    }
+                    currentPosi = x;
+                }
+                if(currentPosi + 30 > sedan.getRoadCarIsOn().getRoadLength() * 33){
+                    JOptionPane.showMessageDialog(null,"Can not add more car");
+                }
+            }
+
         }
 
 

@@ -89,6 +89,74 @@ public class Car {
     private int getIndexOfCurrentRoad(){
         return Const.getCurrentCity().getRoads().indexOf(road);
     }
+    /*private Road nextRoad(){
+        int otherRoadXPos;
+        int otherRoadYPos;
+        int otherRoadEndXPos;
+        int otherRoadEndYPos;
+        int currentRoadXPos;
+        int currentRoadYPos;
+        int currentRoadEndXPos;
+        int currentRoadEndYPos;
+        Road currentRoad = Const.getCurrentCity().getRoads().get(getIndexOfCurrentRoad());
+        ArrayList<Road> otherRoads = new ArrayList<Road>();
+        ArrayList<Road> connectedRoads = new ArrayList<Road>();
+        int limit = 50;
+        otherRoads =Const.getCurrentCity().getRoads();
+        otherRoads.remove(currentRoad);
+        if(currentRoad.getOrientation().equals("vertical")){
+            currentRoadXPos = currentRoad.getRoadYPos();
+            currentRoadYPos = currentRoad.getRoadXPos();
+            currentRoadEndXPos = currentRoad.getEndRoadYPos();
+            currentRoadEndYPos = currentRoad.getEndRoadXPos();
+        }
+        else{
+            currentRoadXPos = currentRoad.getRoadXPos();
+            currentRoadYPos = currentRoad.getRoadYPos();
+            currentRoadEndXPos = currentRoad.getEndRoadXPos();
+            currentRoadEndYPos = currentRoad.getEndRoadYPos();
+        }
+        if(otherRoads!= null){
+            for (int i = 0; i < otherRoads.size(); i++) {
+                Road r = otherRoads.get(i);
+                if(r.getOrientation().equals("horizontal")){
+                    otherRoadXPos = r.getRoadXPos();
+                    otherRoadYPos = r.getRoadYPos();
+                    otherRoadEndXPos = r.getEndRoadXPos();
+                    otherRoadEndYPos = r.getEndRoadYPos();
+                }
+                else{
+                    otherRoadXPos = r.getRoadYPos();
+                    otherRoadYPos = r.getRoadXPos();
+                    otherRoadEndXPos = r.getEndRoadYPos();
+                    otherRoadEndYPos = r.getEndRoadXPos();
+                }
+                if(currentRoad.getTrafficDirection().equals("east") && otherRoadXPos > currentRoadEndXPos-limit &&otherRoadXPos < currentRoadEndXPos+limit) {
+                    connectedRoads.add(r);
+                }
+                else if(currentRoad.getTrafficDirection().equals("west") && otherRoadEndXPos < currentRoadXPos+limit && otherRoadEndXPos > currentRoadXPos-limit){
+                    connectedRoads.add(r);
+                }
+                else if(currentRoad.getTrafficDirection().equals("north") && otherRoadEndYPos < currentRoadYPos+limit && otherRoadEndYPos > currentRoadYPos-limit) {
+                    connectedRoads.add(r);
+                }
+                else if(currentRoad.getTrafficDirection().equals("south") && otherRoadYPos > currentRoadEndYPos-limit && otherRoadYPos < currentRoadEndYPos+limit){
+                    connectedRoads.add(r);
+                }
+
+            }
+            if(connectedRoads.size() !=0){
+                Random random_method= new Random();
+                int choice = random_method.nextInt(connectedRoads.size());
+                return connectedRoads.get(choice);
+            }
+            else{return null;}
+        }else{return null;}
+
+
+
+
+    }*/
     private Road nextRoad(){
         int otherRoadXPos;
         int otherRoadYPos;
@@ -143,6 +211,12 @@ public class Car {
                 else if(currentRoad.getTrafficDirection().equals("south") && otherRoadYPos > currentRoadEndYPos){
                     yPositions.add(otherRoadYPos);
                 }
+//                else if(currentRoad.getTrafficDirection().equals("north") && otherRoadYPos > currentRoadEndYPos) {
+//                    yPositions.add(otherRoadEndYPos);
+//                }
+//                else if(currentRoad.getTrafficDirection().equals("south") && otherRoadEndYPos < currentRoadYPos){
+//                    yPositions.add(otherRoadYPos);
+//                }
             }
         }
         int num;
@@ -152,8 +226,8 @@ public class Car {
         ArrayList<Integer> index = new ArrayList<Integer>();
         //int index2 =0;
         ArrayList<Integer> index2 = new ArrayList<Integer>();
-        int difference_1 = 100; //any road within radius 100 is connected
-        int difference_2 = 100;
+        int difference_1 = 50; //any road within radius 100 is connected
+        int difference_2 = 50;
         if(currentRoad.getTrafficDirection().equals("east") || currentRoad.getTrafficDirection().equals("west")) {
             for (int j = 0; j < xPositions.size(); j++) { // loops through every position
                 int Difference_x = Math.abs(xPositions.get(j) - num);
@@ -164,7 +238,7 @@ public class Car {
             }
         }
         else if(currentRoad.getTrafficDirection().equals("south") || currentRoad.getTrafficDirection().equals("north")) {
-            for (int j = 0; j < xPositions.size(); j++) { // loops through every position
+            for (int j = 0; j < yPositions.size(); j++) { // loops through every position
                 int Difference_y = Math.abs(yPositions.get(j) - num2);
                 if (Difference_y < difference_2) { // checks if difference is getting smaller
                     index2.add(j);
@@ -183,7 +257,7 @@ public class Car {
                 System.out.println(index.size());
             }
             else {
-                int choice = random_method.nextInt(index.size());
+                int choice = random_method.nextInt(index2.size());
                 closestYPosition = yPositions.get(choice);//get(index2.get(choice));
                 System.out.println(choice);
                 System.out.println(index2.size());
@@ -208,7 +282,7 @@ public class Car {
             xPositions.clear();
             yPositions.clear();
             index.clear();
-            index.clear();
+            index2.clear();
             return nextRoad;
         }else{ return null;}
 
@@ -225,9 +299,11 @@ public class Car {
                 xPos -= 25*speed;
             }
             if (checkIfAtEndOfRoad()) {
+                System.out.println("hello");
                 try {
                     Road r = nextRoad();
                     if(r!= null){
+
                     setCurrentRoad(r);
                     if(r.getOrientation().equals("horizontal") && r.getTrafficDirection().equals("east") || r.getOrientation().equals("vertical") && r.getTrafficDirection().equals("south")) {
                         for (int x = r.getRoadXPos(); x + getCarWidth() < r.getRoadLength()*25+ r.getEndRoadXPos(); x = x + 30) {
@@ -248,14 +324,17 @@ public class Car {
                         }
                     }
                 } else{
+                        System.out.println("yahahlo");
                         speed=0;
                         Const.getCurrentCity().getCars().remove(this); // •	A vehicle disappears from the city when it reaches the end of a road
-                    } //infinite
+                    }
                 }
                 catch (IndexOutOfBoundsException e){
+
                    /* setCurrentRoad(road);
                     xPos = road.getRoadXPos();
                     yPos = road.getRoadYPos() + 5;*/
+
 
                 }
             }
