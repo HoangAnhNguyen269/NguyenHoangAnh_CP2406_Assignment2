@@ -177,9 +177,15 @@ public class Road extends JPanel {
         lightColor = c;
     }
 
+    public Color getLightColor() {
+        return lightColor;
+    }
+
     @Override
     public String toString() {
         return "Road:" + numOfSegments / 2 + "," + orientation + "," + roadXPos + "," + roadYPos + "," + trafficDirection + "," + (light == null ? "0" : "1");
     }
+
+
 }
 

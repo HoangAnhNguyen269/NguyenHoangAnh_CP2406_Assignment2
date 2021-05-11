@@ -288,10 +288,19 @@ public class Car {
 
 
     }
+    public void setSpeed(int speedSet){
+        if(speedSet <0 || speedSet > this.getRoadCarIsOn().getRoadLength()){
+            speed =1;
+        }
+        else{
+            speed = speedSet;
+        }
+    }
 
 
     public void move() {
         if(canMoveForward()) {
+            setSpeed(speed);
             if(road.getTrafficDirection().equals("east") || road.getTrafficDirection().equals("south")) {
                 xPos += 25*speed;
             }
@@ -299,7 +308,6 @@ public class Car {
                 xPos -= 25*speed;
             }
             if (checkIfAtEndOfRoad()) {
-                System.out.println("hello");
                 try {
                     Road r = nextRoad();
                     if(r!= null){

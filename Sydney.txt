@@ -4,3 +4,6 @@ Road:5,vertical,0,0,east,0
 Road:5,vertical,299,151,east,0
 Road:5,vertical,43,409,north,1
 Road:5,vertical,314,416,south,1
+Road:5,horizontal,423,287,east,0
+Road:5,horizontal,686,296,east,0
+Road:5,vertical,315,939,south,1

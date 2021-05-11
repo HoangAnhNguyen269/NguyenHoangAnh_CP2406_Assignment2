@@ -40,12 +40,35 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
 
     //west container
     private Container westNavBar = new Container();
+    private JButton addCar = new JButton("add a customized car");
     private JButton addSedan = new JButton("add sedan");
     private JButton addBus = new JButton("add bus");
     private JButton addBike = new JButton("add motorbike");
     private JButton addRoad = new JButton("add road");
     private JButton addSpawnRate = new JButton("Enter spawn rate");
+    private JButton stopSpawn = new JButton("Stop auto spawn");
 
+    //East container
+    private Panel eastContainer = new Panel();
+    private Panel inforCityFirstLinePanel = new Panel();
+    private JLabel inforCityFirstLine = new JLabel("City Information");
+    private JLabel blankblock = new JLabel();
+
+    private Panel inforCarPanel = new Panel();
+    private JLabel inforCar = new JLabel("Number of cars");
+    private JLabel inforCarLine = new JLabel();
+
+    private Panel inforGreenPanel = new Panel();
+    private JLabel inforGreen = new JLabel("Number of green lights");
+    private JLabel NumGreenLight = new JLabel();
+
+    private Panel inforRedPanel = new Panel();
+    private JLabel inforRed = new JLabel("Number of red lights");
+    private JLabel NumRedLight = new JLabel();
+
+    private Panel speedLinePanel = new Panel();
+    private JLabel speedLine = new JLabel("Average speed");
+    private JLabel averageSpeed = new JLabel();
 
     //road orientation selection
     private ButtonGroup selections = new ButtonGroup();
@@ -86,6 +109,46 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
         north.add(yPosField);
         frame.add(north, BorderLayout.NORTH);
 
+        //east container
+        eastContainer.setBackground(Color.lightGray);
+        eastContainer.setLayout(new GridLayout(20,1));
+
+        inforCityFirstLinePanel.setBackground(Color.getHSBColor(172,21,69));
+        eastContainer.add(inforCityFirstLinePanel);
+        inforCityFirstLinePanel.add(inforCityFirstLine);
+
+        eastContainer.add(blankblock);
+
+        inforCarPanel.setBackground(Color.getHSBColor(172,21,69));
+        eastContainer.add(inforCarPanel);
+        inforCarPanel.add(inforCar);
+        inforCarLine.setText(String.valueOf(Const.getCurrentCity().getCars().size()));
+        inforCarLine.setHorizontalAlignment(SwingConstants.CENTER);
+        eastContainer.add(inforCarLine);
+
+        inforGreenPanel.setBackground(Color.getHSBColor(172,21,69));
+        eastContainer.add(inforGreenPanel);
+        inforGreenPanel.add(inforGreen);
+        NumGreenLight.setText(String.valueOf(getNumGreenLight()));
+        NumGreenLight.setHorizontalAlignment(SwingConstants.CENTER);
+        eastContainer.add(NumGreenLight);
+
+        inforRedPanel.setBackground(Color.getHSBColor(172,21,69));
+        eastContainer.add(inforRedPanel);
+        inforRedPanel.add(inforRed);
+        NumRedLight.setText(String.valueOf(getNumRedLight()));
+        NumRedLight.setHorizontalAlignment(SwingConstants.CENTER);
+        eastContainer.add(NumRedLight);
+
+        speedLinePanel.setBackground(Color.getHSBColor(172,21,69));
+        eastContainer.add(speedLinePanel);
+        speedLinePanel.add(speedLine);
+        averageSpeed.setText(String.valueOf(getAverageSpeed()));
+        averageSpeed.setHorizontalAlignment(SwingConstants.CENTER);
+        eastContainer.add(averageSpeed);
+
+        frame.add(eastContainer,BorderLayout.EAST);
+
         //buttons on the south side
         navBar.setLayout(new GridLayout(1, 5));
         navBar.add(startSim);
@@ -103,7 +166,9 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
         frame.add(navBar, BorderLayout.SOUTH);
 
         //buttons on west side
-        westNavBar.setLayout(new GridLayout(18, 1));
+        westNavBar.setLayout(new GridLayout(20, 1));
+        westNavBar.add(addCar);
+        addCar.addActionListener(this);
         westNavBar.add(addSedan);
         addSedan.addActionListener(this);
         westNavBar.add(addBus);
@@ -114,6 +179,8 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
         addRoad.addActionListener(this);
         addSpawnRate.addActionListener(this);
         westNavBar.add(addSpawnRate);
+        stopSpawn.addActionListener(this);
+        westNavBar.add(stopSpawn);
         westNavBar.add(label);
         westNavBar.add(length);
         length.addActionListener(this);
@@ -192,6 +259,85 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
                 Const.getCurrentCity().getRoads().remove(Const.getCurrentCity().getRoads().size() - 1);
                 frame.repaint();
             }
+        }
+        if (source == addCar){
+            String[] options = new String[3];
+            options[0] = "sedan";
+            options[1]="bus";
+            options[2]="bike";
+            String type = (String) JOptionPane.showInputDialog(null, "Please select type of car",
+                    "Cuztomize a Car", JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+            if (type == null) {
+                return;
+            }else{
+                ArrayList<Road> roads = Const.getCurrentCity().getRoads();
+                int speedSet = Integer.parseInt(JOptionPane.showInputDialog(null,"Enter the speed. The speed have to be bigger than 0 and smaller than "+ roads.get(0).getRoadLength() ));
+                while(speedSet <0 || speedSet >roads.get(0).getRoadLength() ){
+                    speedSet = Integer.parseInt(JOptionPane.showInputDialog(null,"Enter the speed. The speed have to be bigger than 0 and smaller than "+ roads.get(0).getRoadLength() ));
+                }
+                if(type.equals("sedan")){
+                    if (roads.size() != 0) {
+                        int currentPosi = 0;
+                        Sedan sedan = new Sedan(roads.get(0));
+                        sedan.setSpeed(speedSet);
+                        Const.getCurrentCity().addCar(sedan);
+                        sedan.setCarYPosition(sedan.getRoadCarIsOn().getRoadYPos() + 5);
+                        for (int x = roads.get(0).roadXPos; x < sedan.getRoadCarIsOn().getRoadLength() * 33; x = x + 30) { //limit car based on the road length
+                            sedan.setCarXPosition(x);
+                            if (!sedan.collision(x, sedan)) {
+                                frame.repaint();
+                                return;
+                            }
+                            currentPosi = x;
+                        }
+                        if(currentPosi + 30 > sedan.getRoadCarIsOn().getRoadLength() * 33){
+                            JOptionPane.showMessageDialog(null,"Can not add more car");
+                        }
+                    }
+                } else if(type.equals("bus")){
+                    if (roads.size() != 0) {
+                        int currentPosi = 0;
+                        Bus bus = new Bus(roads.get(0));
+                        bus.setSpeed(speedSet);
+                        Const.getCurrentCity().addCar(bus);
+                        for (int x = roads.get(0).roadXPos; x < bus.getRoadCarIsOn().getRoadLength() * 33; x = x + 30) {//limit car based on the road length
+                            bus.setCarXPosition(x);
+                            bus.setCarYPosition(bus.getRoadCarIsOn().getRoadYPos() + 5);
+                            if (!bus.collision(x, bus)) {
+                                frame.repaint();
+                                return;
+                            }
+                            currentPosi = x;
+                        }
+                        if(currentPosi + 30 > bus.getRoadCarIsOn().getRoadLength() * 33){
+                            JOptionPane.showMessageDialog(null,"Can not add more car");
+                        }
+
+                    }
+                }
+                else{ //add bike
+                    if (roads.size() != 0) {
+                        int currentPosi = 0;
+                        Motorbike motorbike = new Motorbike(roads.get(0));
+                        motorbike.setSpeed(speedSet);
+                        Const.getCurrentCity().addCar(motorbike);
+                        for (int x = roads.get(0).roadXPos; x < motorbike.getRoadCarIsOn().getRoadLength() * 33; x = x + 30) {//limit car based on the road length
+                            motorbike.setCarXPosition(x);
+                            motorbike.setCarYPosition(motorbike.getRoadCarIsOn().getRoadYPos() + 5);
+                            if (!motorbike.collision(x, motorbike)) {
+                                frame.repaint();
+                                return;
+                            }
+                            currentPosi = x;
+                        }
+                        if(currentPosi + 30 > motorbike.getRoadCarIsOn().getRoadLength() * 33){
+                            JOptionPane.showMessageDialog(null,"Can not add more car");
+                        }
+                    }
+                }
+            }
+
+
         }
         if (source == addBus) {
             ArrayList<Road> roads = Const.getCurrentCity().getRoads();
@@ -321,6 +467,9 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
             String spawnRateInput=JOptionPane.showInputDialog(null,"Current spawn rate is "+ Const.spawnRate+". Enter the new spawn rate ");
             Const.spawnRate = Integer.parseInt(spawnRateInput);
         }
+        if(source == stopSpawn){
+            Const.spawnRate = 0;
+        }
         if (source == exitSim) {
             System.exit(0);
         }
@@ -371,10 +520,12 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
 
     @Override
     public void run() {
+
         boolean carCollision = false;
         ArrayList<Boolean> trueCases = new ArrayList<Boolean>();
         int spawnTime = 0;
             while (running) {
+                getInfor();
                 if(Const.spawnRate >0){
                     if(spawnTime < Const.spawnRate){
                         spawnTime ++;
@@ -450,6 +601,7 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
                 frame.repaint();
 
             }
+
         }
 
         public void spawnBike(){
@@ -518,6 +670,48 @@ public class Simulator implements ActionListener, Runnable, MouseListener {
             }
 
         }
+        public int getNumGreenLight(){
+        int numGreen=0;
+            ArrayList<Road> roads = Const.getCurrentCity().getRoads();
+            for(Road road:roads){
+                if (road.getTrafficLight()!=null){
+                    if(road.getLightColor().equals(Color.green)){
+                        numGreen ++;
+                    }
+                }
+            }
+            return numGreen;
+        }
+    public int getNumRedLight(){
+        int numRed=0;
+        ArrayList<Road> roads = Const.getCurrentCity().getRoads();
+        for(Road road:roads){
+            if (road.getTrafficLight()!=null){
+                if(road.getLightColor().equals(Color.red)){
+                    numRed ++;
+                }
+            }
+        }
+        return numRed;
+    }
+    public void getInfor(){
+        inforCarLine.setText(String.valueOf(Const.getCurrentCity().getCars().size()));
+        NumGreenLight.setText(String.valueOf(getNumGreenLight()));
+        NumRedLight.setText(String.valueOf(getNumRedLight()));
+        averageSpeed.setText(String.valueOf(getAverageSpeed()));
+
+    }
+    public double getAverageSpeed(){
+        ArrayList<Car> cars = new ArrayList<Car>();
+        cars = Const.getCurrentCity().getCars();
+        if(cars == null){return 0;}
+        double totalSpeed = 0;
+        for(Car car: cars){
+            totalSpeed += car.speed;
+        }
+        return totalSpeed/(Const.getCurrentCity().getCars().size());
+    }
+
 
 
 }
