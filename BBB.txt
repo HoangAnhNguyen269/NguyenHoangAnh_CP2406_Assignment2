@@ -1,1 +1,0 @@
-Road:12,horizontal,100,270,east,1
